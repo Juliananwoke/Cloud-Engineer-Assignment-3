@@ -1,0 +1,41 @@
+---
+- hosts: all
+  tasks:
+    - name: install apache for ubuntu and centos
+      tags: apache,ubuntu,centos
+      package:
+        name:
+          - "{{ apache_package }}"
+        state: present
+        update_cache: yes
+
+    - name: install git for ubuntu and centos
+      tags: git
+      package:
+        name:
+          - git
+        state: present
+        update_cache: yes
+
+    - name: Clone git repo in temporary location
+      tags: cloned
+      git:
+        repo: https://github.com/Juliananwoke/Altschool-assignment-1.git
+        dest: /tmp/temp_stay
+        version: main
+        update: yes
+      
+    - name: send temporary folder to permanent folder
+      tags: copied
+      copy:
+        src: /tmp/temp_stay/
+        dest: /var/www/html
+        remote_src: true
+
+    - name: start slave machine
+      tags: apache,ubuntu,centos,httpd
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
